@@ -1,12 +1,16 @@
 package uavtApp.controller;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import uavtApp.entity.Country;
 import uavtApp.entity.Location;
@@ -49,23 +53,30 @@ public class ApiController {
 	public List<Country> getRegionCountries(@PathVariable String id){
 		//Region tempReg=regionService.getRegion(id);
 		List<Country> countryList = countryService.getCountriesAsList();
-		
+		List<Country> tempList = new ArrayList<Country>();
 		countryList.forEach(country->{
 			if(country.getRegionId().equals(id))
-				countryList.remove(country);
+				tempList.add(country);
 		});
-		return countryList;
+		if(tempList.size()==0)
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Doesn't have any Countries");
+		return tempList;
 	}
 	@GetMapping("/country/{id}")
 	public List<Location> getCountryLocations(@PathVariable String id){
 		
-		List<Location> locationList = locationService.getLocationsAsList();
+		String upperId=id.toUpperCase(Locale.ROOT);
 		
+		List<Location> locationList = locationService.getLocationsAsList();
+		List<Location> tempList = new ArrayList<Location>();
 		locationList.forEach(location->{
-			if(location.getLocationId().equals(id))
-				locationList.remove(location);
+			
+			if(location.getCountryId().equals(upperId))
+				tempList.add(location);
 		});
-		return locationList;
+		if(tempList.size()==0)
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Doesn't have any location");
+		return tempList;
 	}
 	
 	@GetMapping("/location/{id}")
